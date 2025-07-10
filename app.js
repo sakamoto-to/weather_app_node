@@ -3,7 +3,15 @@ const readline = require('readline-sync');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * 天気予報アプリケーションのメインクラス
+ * OpenWeatherMap APIを使用して天気情報を取得・表示する機能を提供します
+ */
 class WeatherApp {
+    /**
+     * WeatherAppのコンストラクタ
+     * APIキー、ベースURL、設定ファイル、お気に入り都市の初期化を行います
+     */
     constructor() {
         this.apiKey = this.loadApiKey();
         this.baseUrl = 'https://api.openweathermap.org/data/2.5';
@@ -11,6 +19,10 @@ class WeatherApp {
         this.favoriteCities = this.loadFavoriteCities();
     }
 
+    /**
+     * 設定ファイルからAPIキーを読み込みます
+     * @returns {string|null} APIキー、設定ファイルが存在しない場合はnull
+     */
     loadApiKey() {
         const configPath = 'weather_config.json';
         try {
@@ -24,6 +36,10 @@ class WeatherApp {
         return null;
     }
 
+    /**
+     * OpenWeatherMap APIのキーを設定します
+     * ユーザーから入力を受け付け、設定ファイルに保存します
+     */
     setupApiKey() {
         console.log('🌤️  OpenWeatherMap API設定');
         console.log('APIキーを取得するには: https://openweathermap.org/api');
@@ -41,6 +57,10 @@ class WeatherApp {
         console.log('✅ APIキーが保存されました！');
     }
 
+    /**
+     * お気に入りの都市リストをファイルから読み込みます
+     * @returns {string[]} お気に入り都市の配列
+     */
     loadFavoriteCities() {
         const favoritesFile = 'favorite_cities.json';
         try {
@@ -53,11 +73,20 @@ class WeatherApp {
         return [];
     }
 
+    /**
+     * お気に入りの都市リストをファイルに保存します
+     */
     saveFavoriteCities() {
         const favoritesFile = 'favorite_cities.json';
         fs.writeFileSync(favoritesFile, JSON.stringify(this.favoriteCities, null, 2));
     }
 
+    /**
+     * 指定された都市の現在の天気を取得します
+     * @param {string} city 都市名
+     * @returns {Promise<Object>} 天気情報のオブジェクト
+     * @throws {Error} API通信エラーまたは都市が見つからない場合
+     */
     async getCurrentWeather(city) {
         try {
             const response = await axios.get(`${this.baseUrl}/weather`, {
@@ -80,6 +109,12 @@ class WeatherApp {
         }
     }
 
+    /**
+     * 指定された都市の5日間天気予報を取得します
+     * @param {string} city 都市名
+     * @returns {Promise<Object>} 天気予報情報のオブジェクト
+     * @throws {Error} API通信エラーの場合
+     */
     async getForecast(city) {
         try {
             const response = await axios.get(`${this.baseUrl}/forecast`, {
@@ -97,6 +132,10 @@ class WeatherApp {
         }
     }
 
+    /**
+     * 現在の天気情報を整形して表示します
+     * @param {Object} data 天気情報のオブジェクト
+     */
     displayCurrentWeather(data) {
         console.log('\n🌍 現在の天気情報');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -118,6 +157,10 @@ class WeatherApp {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     }
 
+    /**
+     * 5日間の天気予報を整形して表示します
+     * @param {Object} data 天気予報情報のオブジェクト
+     */
     displayForecast(data) {
         console.log('\n📅 5日間天気予報');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -156,6 +199,10 @@ class WeatherApp {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     }
 
+    /**
+     * 新しい都市をお気に入りリストに追加します
+     * @param {string} city 追加する都市名
+     */
     addFavoriteCity(city) {
         if (!this.favoriteCities.includes(city)) {
             this.favoriteCities.push(city);
@@ -166,6 +213,10 @@ class WeatherApp {
         }
     }
 
+    /**
+     * 指定された都市をお気に入りリストから削除します
+     * @param {string} city 削除する都市名
+     */
     removeFavoriteCity(city) {
         const index = this.favoriteCities.indexOf(city);
         if (index > -1) {
@@ -177,6 +228,9 @@ class WeatherApp {
         }
     }
 
+    /**
+     * お気に入りの都市一覧を表示します
+     */
     displayFavoriteCities() {
         if (this.favoriteCities.length === 0) {
             console.log('お気に入りの都市はありません。');
@@ -190,6 +244,10 @@ class WeatherApp {
         console.log('');
     }
 
+    /**
+     * アプリケーションのメインループを実行します
+     * ユーザーの入力に応じて各機能を呼び出します
+     */
     async run() {
         console.log('🌤️  天気予報アプリへようこそ！');
         
@@ -205,7 +263,7 @@ class WeatherApp {
             console.log('4. お気に入り都市を追加');
             console.log('5. お気に入り都市を削除');
             console.log('6. API設定を変更');
-            console.log('7. 終了');x
+            console.log('7. 終了');
             
             const choice = readline.question('選択してください (1-7): ');
             
@@ -241,6 +299,9 @@ class WeatherApp {
         }
     }
 
+    /**
+     * 現在の天気を取得して表示する処理を実行します
+     */
     async handleCurrentWeather() {
         const city = this.getCityInput();
         if (!city) return;
@@ -250,6 +311,9 @@ class WeatherApp {
         this.displayCurrentWeather(weather);
     }
 
+    /**
+     * 天気予報を取得して表示する処理を実行します
+     */
     async handleForecast() {
         const city = this.getCityInput();
         if (!city) return;
@@ -259,12 +323,19 @@ class WeatherApp {
         this.displayForecast(forecast);
     }
 
+    /**
+     * ユーザーから都市名の入力を受け付けます
+     * @returns {string} 入力された都市名
+     */
     getCityInput() {
         this.displayFavoriteCities();
         const city = readline.question('都市名を入力してください（例: Tokyo, London, New York）: ');
         return city.trim();
     }
 
+    /**
+     * お気に入り都市の追加処理を実行します
+     */
     handleAddFavorite() {
         const city = readline.question('お気に入りに追加する都市名を入力してください: ');
         if (city.trim()) {
@@ -272,6 +343,9 @@ class WeatherApp {
         }
     }
 
+    /**
+     * お気に入り都市の削除処理を実行します
+     */
     handleRemoveFavorite() {
         this.displayFavoriteCities();
         if (this.favoriteCities.length === 0) return;
